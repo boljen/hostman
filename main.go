@@ -35,19 +35,21 @@ func main() {
 		},
 
 		Action: func(ctx context.Context, cmd *cli.Command) error {
+			cfgFile, err := hostman.ResolveConfigFilePath(cmd.String("config"))
+			if err != nil {
+				return errors.New(fmt.Sprintf("Could not resolve config file '%s'", cmd.String("config")))
+			}
 
-			hostman.resolveConfigFilePath(cmd.String("config"))
-			fmt.Println(cmd.String("config"))
-			fmt.Println(cmd.String("hostsfile"))
-			fmt.Println(cmd.Bool("watch"))
+			fmt.Println(cfgFile)
 
-			//file, err := hostman.ParseConfigFromFile("./examples/simple/hostman.hcl")
-			//if err != nil {
-			//	log.Fatal(err)
-			//}
+			//fmt.Println(cmd.String("hostsfile"))
+			//fmt.Println(cmd.Bool("watch"))
+
+			// If watch => watch filename for changes
+			// + watch http endpoints for changes
 			//
-			//log.Println(file)
-			return errors.New("Not yet implemented")
+
+			return nil
 		},
 
 		Commands: []*cli.Command{

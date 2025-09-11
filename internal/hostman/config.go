@@ -12,23 +12,12 @@ type ConfigFile struct {
 	Http    []HTTPSource   `hcl:"http,block"`
 }
 
-// ResolveConfigFile resolves a configuration file path based on user input.
-// If input is just a filename (no path separators), it searches the current
-// directory and then ascends parent directories until the root to find the file.
-// If input contains a path, it resolves that specific path only (relative to cwd if relative).
-// Returns the absolute path to the existing file or an error if not found.
 func ResolveConfigFile(filename string) (*ConfigFile, error) {
-	resolved, err := resolveConfigFilePath(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-
-	data, err := os.ReadFile(resolved)
-	if err != nil {
-		return nil, err
-	}
-
-	return ParseConfig(resolved, data)
+	return ParseConfig(filename, data)
 }
 
 func ParseConfig(path string, data []byte) (*ConfigFile, error) {

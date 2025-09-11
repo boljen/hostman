@@ -7,7 +7,12 @@ import (
 	"strings"
 )
 
-func resolveConfigFilePath(input string) (string, error) {
+// ResolveConfigFilePath resolves a configuration file path based on user input.
+// If input is just a filename (no path separators), it searches the current
+// directory and then ascends parent directories until the root to find the file.
+// If input contains a path, it resolves that specific path only (relative to cwd if relative).
+// Returns the absolute path to the existing file or an error if not found.
+func ResolveConfigFilePath(input string) (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return "", err
