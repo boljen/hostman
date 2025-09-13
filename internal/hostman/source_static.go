@@ -10,8 +10,21 @@ type StaticSource struct {
 }
 
 func (s *StaticSource) GetMapping() (map[string]string, error) {
-
-	return nil, errors.New("not yet implemented")
+	if err := s.Validate(); err != nil {
+		return nil, err
+	}
+	m := make(map[string]string)
+	if s.Host != nil {
+		m[*s.Host] = s.Ip
+		return m, nil
+	} else if s.Hosts != nil {
+		for _, h := range *s.Hosts {
+			m[h] = s.Ip
+		}
+		return m, nil
+	} else {
+		return nil, errors.New("host or hosts must be set")
+	}
 }
 
 func (s *StaticSource) GetName() string {

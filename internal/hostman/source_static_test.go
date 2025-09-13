@@ -65,3 +65,33 @@ func TestStaticSource_Validate_Fails_WhenHostsHaveDuplicates(t *testing.T) {
         t.Fatalf("expected error when hosts contains duplicate names")
     }
 }
+
+func TestStaticSource_GetMapping_WithHost(t *testing.T) {
+    h := "single.example.com"
+    s := &StaticSource{Name: "m1", Host: &h, Ip: "10.0.0.1"}
+    m, err := s.GetMapping()
+    if err != nil {
+        t.Fatalf("GetMapping unexpected error: %v", err)
+    }
+    if len(m) != 1 {
+        t.Fatalf("expected 1 mapping, got %d", len(m))
+    }
+    if got := m["single.example.com"]; got != "10.0.0.1" {
+        t.Fatalf("unexpected mapping: got %q want %q", got, "10.0.0.1")
+    }
+}
+
+func TestStaticSource_GetMapping_WithHosts(t *testing.T) {
+    hs := []string{"a.example.com", "b.example.com"}
+    s := &StaticSource{Name: "m2", Hosts: &hs, Ip: "10.0.0.2"}
+    m, err := s.GetMapping()
+    if err != nil {
+        t.Fatalf("GetMapping unexpected error: %v", err)
+    }
+    if len(m) != 2 {
+        t.Fatalf("expected 2 mappings, got %d", len(m))
+    }
+    if m["a.example.com"] != "10.0.0.2" || m["b.example.com"] != "10.0.0.2" {
+        t.Fatalf("unexpected mappings: %#v", m)
+    }
+}
