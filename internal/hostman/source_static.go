@@ -18,6 +18,21 @@ func (s *StaticSource) GetName() string {
 }
 
 func (s *StaticSource) Validate() error {
+	if s.Host == nil && s.Hosts == nil {
+		return errors.New("host or hosts must be set")
+	}
+	if s.Host != nil && s.Hosts != nil {
+		return errors.New("only one of host or hosts can be set")
+	}
+	if s.Host != nil && *s.Host == "" {
+		return errors.New("host cannot be empty")
+	}
+	if s.Hosts != nil && len(*s.Hosts) == 0 {
+		return errors.New("hosts cannot be empty")
+	}
+	if s.Ip == "" {
+		return errors.New("ip cannot be empty")
+	}
 	return nil
 }
 

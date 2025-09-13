@@ -75,3 +75,59 @@ func TestHTTPSource_GetFromRemote_InvalidJSON(t *testing.T) {
 		t.Fatalf("expected error for invalid JSON")
 	}
 }
+
+
+func TestHTTPSource_Validate_Success(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(exampleResponse))
+	}))
+	defer ts.Close()
+
+	src := &HTTPSource{Endpoint: ts.URL}
+	if err := src.Validate(); err != nil {
+		t.Fatalf("Validate unexpected error: %v", err)
+	}
+}
+
+func TestHTTPSource_Validate_HTTPError(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer ts.Close()
+
+	src := &HTTPSource{Endpoint: ts.URL}
+	if err := src.Validate(); err == nil {
+		t.Fatalf("expected error for non-2xx status")
+	}
+}
+
+func TestHTTPSource_Validate_InvalidJSON(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{ not-json }"))
+	}))
+	defer ts.Close()
+
+	src := &HTTPSource{Endpoint: ts.URL}
+	if err := src.Validate(); err == nil {
+		t.Fatalf("expected error for invalid JSON")
+	}
+}
+
+func TestHTTPSource_Validate_MissingHosts(t *testing.T) {
+	bad := `{"no_hosts": true}`
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(bad))
+	}))
+	defer ts.Close()
+
+	src := &HTTPSource{Endpoint: ts.URL}
+	if err := src.Validate(); err == nil {
+		t.Fatalf("expected error when hosts missing in response")
+	}
+}

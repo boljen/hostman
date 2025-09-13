@@ -34,6 +34,25 @@ func (s *HTTPSource) GetName() string {
 }
 
 func (s *HTTPSource) Validate() error {
+	resp, err := http.Get(s.Endpoint)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("http error: %d", resp.StatusCode)
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var cfg RemoteHostConfig
+	if err := json.Unmarshal(body, &cfg); err != nil {
+		return err
+	}
+	if cfg.Hosts == nil {
+		return errors.New("invalid response: hosts missing")
+	}
 	return nil
 }
 
