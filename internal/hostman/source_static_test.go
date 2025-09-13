@@ -57,3 +57,11 @@ func TestStaticSource_Validate_Fails_WhenIpEmpty(t *testing.T) {
         t.Fatalf("expected error when ip is empty")
     }
 }
+
+func TestStaticSource_Validate_Fails_WhenHostsHaveDuplicates(t *testing.T) {
+    hs := []string{"dup.example.com", "other.example.com", "dup.example.com"}
+    s := &StaticSource{ Name: "s8", Hosts: &hs, Ip: "127.0.0.1" }
+    if err := s.Validate(); err == nil {
+        t.Fatalf("expected error when hosts contains duplicate names")
+    }
+}

@@ -10,6 +10,7 @@ type StaticSource struct {
 }
 
 func (s *StaticSource) GetMapping() (map[string]string, error) {
+
 	return nil, errors.New("not yet implemented")
 }
 
@@ -27,12 +28,24 @@ func (s *StaticSource) Validate() error {
 	if s.Host != nil && *s.Host == "" {
 		return errors.New("host cannot be empty")
 	}
-	if s.Hosts != nil && len(*s.Hosts) == 0 {
-		return errors.New("hosts cannot be empty")
-	}
+
 	if s.Ip == "" {
 		return errors.New("ip cannot be empty")
 	}
+
+	if s.Hosts != nil {
+		if len(*s.Hosts) == 0 {
+			return errors.New("hosts cannot be empty")
+		}
+		seen := make(map[string]struct{})
+		for _, h := range *s.Hosts {
+			if _, ok := seen[h]; ok {
+				return errors.New("hosts contains duplicate names")
+			}
+			seen[h] = struct{}{}
+		}
+	}
+
 	return nil
 }
 
