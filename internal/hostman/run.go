@@ -37,6 +37,5 @@ func RunOnce(cfg Config) error {
 }
 
 func RunAndWatch(cfg Config) error {
-
 	return nil
 }

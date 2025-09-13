@@ -1,6 +1,16 @@
 package hostman
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+)
+
+type RemoteHostConfig struct {
+	Hosts map[string]string
+}
 
 type HTTPSource struct {
 	Name            string `hcl:"name,label"`
@@ -9,7 +19,14 @@ type HTTPSource struct {
 }
 
 func (s *HTTPSource) GetMapping() (map[string]string, error) {
-	return nil, errors.New("not yet implemented")
+	cfg, err := s.GetFromRemote()
+	if err != nil {
+		return nil, err
+	}
+	if cfg == nil || cfg.Hosts == nil {
+		return nil, errors.New("invalid remote config: hosts missing")
+	}
+	return cfg.Hosts, nil
 }
 
 func (s *HTTPSource) GetName() string {
@@ -18,6 +35,32 @@ func (s *HTTPSource) GetName() string {
 
 func (s *HTTPSource) Validate() error {
 	return nil
+}
+
+func (s *HTTPSource) GetFromRemote() (*RemoteHostConfig, error) {
+	if s.Endpoint == "" {
+		return nil, errors.New("endpoint not set")
+	}
+	resp, err := http.Get(s.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("http error: %d", resp.StatusCode)
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var cfg RemoteHostConfig
+	if err := json.Unmarshal(body, &cfg); err != nil {
+		return nil, err
+	}
+	if cfg.Hosts == nil {
+		return nil, errors.New("invalid response: hosts missing")
+	}
+	return &cfg, nil
 }
 
 var _ Source = (*HTTPSource)(nil)
