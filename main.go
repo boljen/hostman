@@ -19,40 +19,48 @@ func main() {
 
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:        "config",
-				Usage:       "Name of the hostman project config file. If only a filename is given it will look for the file in the current directory or any of the parent directories.",
-				DefaultText: "hostman.hcl",
+				Name:    "file",
+				Usage:   "Name of the hostman project file. If only a filename is given it will look for the file in the current directory or any of the parent directories.",
+				Aliases: []string{"f"},
+				Value:   "hostman.hcl",
 			},
 			&cli.StringFlag{
-				Name:        "hostsfile",
-				Usage:       "location of the os hosts file",
-				DefaultText: HOST_FILE_NATIVE_PATH,
+				Name:    "hostsfile",
+				Usage:   "location of the os hosts file",
+				Aliases: []string{"h"},
+				Value:   HOST_FILE_NATIVE_PATH,
 			},
 			&cli.BoolFlag{
-				Name:  "watch",
-				Usage: "Enable watch mode",
+				Name:    "watch",
+				Usage:   "Enable watch mode",
+				Aliases: []string{"w"},
 			},
 		},
 
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			cfgFile, err := hostman.ResolveConfigFilePath(cmd.String("config"))
-			if err != nil {
-				return errors.New(fmt.Sprintf("Could not resolve config file '%s'", cmd.String("config")))
-			}
+			watchMode := cmd.Bool("watch")
+			filename := cmd.String("file")
+			hostsFile := cmd.String("hostsfile")
 
-			fmt.Println(cfgFile)
-
-			//fmt.Println(cmd.String("hostsfile"))
-			//fmt.Println(cmd.Bool("watch"))
-
-			// If watch => watch filename for changes
-			// + watch http endpoints for changes
-			//
-
-			return nil
+			return hostman.Run(hostman.Config{
+				Watchmode: watchMode,
+				Filename:  filename,
+				Hostsfile: hostsFile,
+			})
 		},
 
 		Commands: []*cli.Command{
+			{
+				Name:  "init",
+				Usage: "Initializes a new hostman project file (hostman.hcl) in the current directory",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					cwd, err := os.Getwd()
+					if err != nil {
+						return err
+					}
+					return hostman.InitProjectFile(cwd)
+				},
+			},
 			{
 				Name:  "projects",
 				Usage: "Lists current projects in the hosts file together with their host mapping and original file",
@@ -63,7 +71,12 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return errors.New("Not yet implemented")
+					data, err := os.ReadFile(cmd.String("hostsfile"))
+					if err != nil {
+						return errors.New(fmt.Sprintf("Could not read hosts file '%s' because error '%s'", cmd.String("hostsfile"), err))
+					}
+					os.Stdout.Write(data)
+					return nil
 				},
 			},
 			{

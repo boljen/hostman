@@ -1,5 +1,7 @@
 # Hostman
 
+[![Tests](https://github.com/boljen/hostman/actions/workflows/tests.yml/badge.svg)](https://github.com/boljen/hostman/actions/workflows/tests.yml)
+
 A utility to manage hosts files for project-specific development/testing environment setup.
 
 ## Features
@@ -12,7 +14,7 @@ A utility to manage hosts files for project-specific development/testing environ
 
 Head over to the releases page or install from source;
 
-    go install github.com/boljen/hostman@latest
+    go install github.com/boljen/hostman
 
 ## Usage
 
@@ -35,7 +37,7 @@ Step 2: Run the binary
 
     hostman
 
-There should be a new section in your hosts file that links example.com to 127.0.0.1.
+There should be a new section in your hosts file that maps example.com to 127.0.0.1.
 
 ## Advanced configuration
 

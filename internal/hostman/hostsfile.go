@@ -1,5 +1,10 @@
 package hostman
 
-type File struct {
+type HostsFile struct {
 	Location string
+}
+
+func OpenHostsFile(location string) (*HostsFile, error) {
+
+	return nil, nil
 }
