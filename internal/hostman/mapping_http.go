@@ -12,13 +12,13 @@ type RemoteHostConfig struct {
 	Hosts map[string]string
 }
 
-type HTTPSource struct {
+type HTTPMapping struct {
 	Name            string `hcl:"name,label"`
 	Endpoint        string `hcl:"endpoint"`
 	RefreshInterval int    `hcl:"refresh_interval"`
 }
 
-func (s *HTTPSource) GetMapping() (map[string]string, error) {
+func (s *HTTPMapping) GetMapping() (map[string]string, error) {
 	cfg, err := s.GetFromRemote()
 	if err != nil {
 		return nil, err
@@ -29,11 +29,11 @@ func (s *HTTPSource) GetMapping() (map[string]string, error) {
 	return cfg.Hosts, nil
 }
 
-func (s *HTTPSource) GetName() string {
+func (s *HTTPMapping) GetName() string {
 	return s.Name
 }
 
-func (s *HTTPSource) Validate() error {
+func (s *HTTPMapping) Validate() error {
 	resp, err := http.Get(s.Endpoint)
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (s *HTTPSource) Validate() error {
 	return nil
 }
 
-func (s *HTTPSource) GetFromRemote() (*RemoteHostConfig, error) {
+func (s *HTTPMapping) GetFromRemote() (*RemoteHostConfig, error) {
 	if s.Endpoint == "" {
 		return nil, errors.New("endpoint not set")
 	}
@@ -82,4 +82,4 @@ func (s *HTTPSource) GetFromRemote() (*RemoteHostConfig, error) {
 	return &cfg, nil
 }
 
-var _ Source = (*HTTPSource)(nil)
+var _ Mapping = (*HTTPMapping)(nil)

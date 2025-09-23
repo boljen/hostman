@@ -24,7 +24,7 @@ func TestHTTPSource_GetFromRemote_Success(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	src := &HTTPSource{Endpoint: ts.URL}
+	src := &HTTPMapping{Endpoint: ts.URL}
 
 	// Act
 	cfg, err := src.GetFromRemote()
@@ -56,7 +56,7 @@ func TestHTTPSource_GetFromRemote_HTTPError(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	src := &HTTPSource{Endpoint: ts.URL}
+	src := &HTTPMapping{Endpoint: ts.URL}
 	if _, err := src.GetFromRemote(); err == nil {
 		t.Fatalf("expected error for non-2xx status")
 	}
@@ -70,12 +70,11 @@ func TestHTTPSource_GetFromRemote_InvalidJSON(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	src := &HTTPSource{Endpoint: ts.URL}
+	src := &HTTPMapping{Endpoint: ts.URL}
 	if _, err := src.GetFromRemote(); err == nil {
 		t.Fatalf("expected error for invalid JSON")
 	}
 }
-
 
 func TestHTTPSource_Validate_Success(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +84,7 @@ func TestHTTPSource_Validate_Success(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	src := &HTTPSource{Endpoint: ts.URL}
+	src := &HTTPMapping{Endpoint: ts.URL}
 	if err := src.Validate(); err != nil {
 		t.Fatalf("Validate unexpected error: %v", err)
 	}
@@ -97,7 +96,7 @@ func TestHTTPSource_Validate_HTTPError(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	src := &HTTPSource{Endpoint: ts.URL}
+	src := &HTTPMapping{Endpoint: ts.URL}
 	if err := src.Validate(); err == nil {
 		t.Fatalf("expected error for non-2xx status")
 	}
@@ -111,7 +110,7 @@ func TestHTTPSource_Validate_InvalidJSON(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	src := &HTTPSource{Endpoint: ts.URL}
+	src := &HTTPMapping{Endpoint: ts.URL}
 	if err := src.Validate(); err == nil {
 		t.Fatalf("expected error for invalid JSON")
 	}
@@ -126,7 +125,7 @@ func TestHTTPSource_Validate_MissingHosts(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	src := &HTTPSource{Endpoint: ts.URL}
+	src := &HTTPMapping{Endpoint: ts.URL}
 	if err := src.Validate(); err == nil {
 		t.Fatalf("expected error when hosts missing in response")
 	}

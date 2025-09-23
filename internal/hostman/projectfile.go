@@ -6,13 +6,14 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsimple"
 	"os"
 	"regexp"
+	"strconv"
 )
 
 type ProjectFile struct {
-	Project string          `hcl:"project"`
-	Sources []string        `hcl:"sources"`
-	Static  []*StaticSource `hcl:"static,block"`
-	Http    []*HTTPSource   `hcl:"http,block"`
+	Project string           `hcl:"project"`
+	Sources []string         `hcl:"sources"`
+	Static  []*StaticMapping `hcl:"static,block"`
+	Http    []*HTTPMapping   `hcl:"http,block"`
 
 	filepath string
 }
@@ -38,39 +39,62 @@ func ParseProjectFileData(filepath string, data []byte) (*ProjectFile, error) {
 	return &file, nil
 }
 
-func (file *ProjectFile) Validate() error {
+func (file *ProjectFile) GetMappingSources() ([]Mapping, error) {
+	mapped, err := file.validateAndMapSources()
+	if err != nil {
+		return nil, err
+	}
 
-	/*
+	list := make([]Mapping, 0, len(file.Sources))
 
-		mappedSources, err := validateAndMapSources(file)
-		if err != nil {
-			return nil, err
+	for _, src := range file.Sources {
+		if _, has := mapped[src]; !has {
+			return nil, fmt.Errorf("source '%s' not found", src)
 		}
-		file.mappedSources = mappedSources
+		list = append(list, mapped[src])
+	}
 
-		// Build sortedSources from the Sources list
-		file.sortedSources = make([]Source, 0, len(file.Sources))
-		seen := make(map[string]struct{})
-		for _, name := range file.Sources {
-			if name == "" {
-				return nil, errors.New("sources list contains empty name")
-			}
-			if _, dup := seen[name]; dup {
-				return nil, fmt.Errorf("duplicate source in sources list: %s", name)
-			}
-			seen[name] = struct{}{}
-			src, ok := file.mappedSources[name]
-			if !ok {
-				return nil, fmt.Errorf("source referenced but not defined: %s", name)
-			}
-			file.sortedSources = append(file.sortedSources, src)
-		}*/
+	return list, nil
+}
 
+func (file *ProjectFile) Validate() error {
+	if err := file.validateSourceConfigs(); err != nil {
+		return err
+	}
+	sourcesMap, err := file.validateAndMapSources()
+	if err != nil {
+		return err
+	}
+	if file.Sources == nil {
+		return errors.New("sources cannot be empty")
+	}
+	for i, src := range file.Sources {
+		if _, has := sourcesMap[src]; !has {
+			return fmt.Errorf("sources["+strconv.Itoa(i)+"] with name '%s' not found", src)
+		}
+	}
 	return nil
 }
 
-func (file *ProjectFile) getSourcesList() []Source {
-	sources := make([]Source, 0, len(file.Static)+len(file.Http))
+func (file *ProjectFile) validateSourceConfigs() error {
+	sources := file.getAvailableSources()
+	errorList := make([]error, 0)
+	for _, source := range sources {
+		if err := source.Validate(); err != nil {
+			errorList = append(errorList, err)
+		}
+		if err := validateName(source.GetName()); err != nil {
+			errorList = append(errorList, err)
+		}
+	}
+	if len(errorList) > 0 {
+		return errors.Join(errorList...)
+	}
+	return nil
+}
+
+func (file *ProjectFile) getAvailableSources() []Mapping {
+	sources := make([]Mapping, 0, len(file.Static)+len(file.Http))
 	for i := 0; i < len(file.Static); i++ {
 		sources = append(sources, file.Static[i])
 	}
@@ -80,9 +104,9 @@ func (file *ProjectFile) getSourcesList() []Source {
 	return sources
 }
 
-func validateAndMapSources(file ProjectFile) (map[string]Source, error) {
-	sourcesMap := make(map[string]Source, len(file.Static)+len(file.Http))
-	sources := make([]Source, 0, len(file.Static)+len(file.Http))
+func (file *ProjectFile) validateAndMapSources() (map[string]Mapping, error) {
+	sourcesMap := make(map[string]Mapping, len(file.Static)+len(file.Http))
+	sources := make([]Mapping, 0, len(file.Static)+len(file.Http))
 	for _, s := range file.Static {
 		sources = append(sources, s)
 	}
@@ -90,23 +114,25 @@ func validateAndMapSources(file ProjectFile) (map[string]Source, error) {
 		sources = append(sources, s)
 	}
 
+	errorList := make([]error, 0)
+
 	for _, s := range sources {
 		name := s.GetName()
-		if err := validateName(name); err != nil {
-			return nil, err
-		}
 		if _, exists := sourcesMap[name]; exists {
-			return nil, fmt.Errorf("duplicate source name: %s", name)
-		}
-		if err := s.Validate(); err != nil {
-			return nil, fmt.Errorf("invalid source '%s': %w", name, err)
+			errorList = append(errorList, fmt.Errorf("duplicate source name: %s", name))
+			continue
 		}
 		sourcesMap[name] = s
 	}
+
+	if len(errorList) > 0 {
+		return nil, errors.Join(errorList...)
+	}
+
 	return sourcesMap, nil
 }
 
-var validateNameRegex = regexp.MustCompile(`\s`)
+var validateNameRegex = regexp.MustCompile(`\S`)
 
 func validateName(name string) error {
 	if name == "" {

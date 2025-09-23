@@ -2,14 +2,14 @@ package hostman
 
 import "errors"
 
-type StaticSource struct {
+type StaticMapping struct {
 	Name  string    `hcl:"name,label"`
 	Host  *string   `hcl:"host"`
 	Hosts *[]string `hcl:"hosts"`
 	Ip    string    `hcl:"ip"`
 }
 
-func (s *StaticSource) GetMapping() (map[string]string, error) {
+func (s *StaticMapping) GetMapping() (map[string]string, error) {
 	if err := s.Validate(); err != nil {
 		return nil, err
 	}
@@ -27,11 +27,11 @@ func (s *StaticSource) GetMapping() (map[string]string, error) {
 	}
 }
 
-func (s *StaticSource) GetName() string {
+func (s *StaticMapping) GetName() string {
 	return s.Name
 }
 
-func (s *StaticSource) Validate() error {
+func (s *StaticMapping) Validate() error {
 	if s.Host == nil && s.Hosts == nil {
 		return errors.New("host or hosts must be set")
 	}
@@ -62,4 +62,4 @@ func (s *StaticSource) Validate() error {
 	return nil
 }
 
-var _ Source = (*StaticSource)(nil)
+var _ Mapping = (*StaticMapping)(nil)

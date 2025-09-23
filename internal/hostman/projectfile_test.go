@@ -2,6 +2,7 @@ package hostman
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -62,3 +63,64 @@ func TestParseProjectFileData_InvalidHCL(t *testing.T) {
 		t.Fatalf("ParseProjectFileData did not return an error for invalid HCL input")
 	}
 }
+
+func TestGetMappingSources_OrderAndSelection(t *testing.T) {
+	pf := &ProjectFile{
+		Sources: []string{"two", "one"},
+		Static:  []*StaticMapping{},
+		Http:    []*HTTPMapping{},
+	}
+
+	host := "example"
+	pf.Static = []*StaticMapping{{Name: "one", Host: &host, Ip: "127.0.0.1"}}
+	pf.Http = []*HTTPMapping{{Name: "two", Endpoint: "http://127.invalid/"}}
+
+	got, err := pf.GetMappingSources()
+	if err != nil {
+		t.Fatalf("GetMappingSources returned error: %v", err)
+	}
+	if len(got) != 2 {
+		t.Fatalf("unexpected number of mappings: got %d, want %d", len(got), 2)
+	}
+	if got[0].GetName() != "two" || got[1].GetName() != "one" {
+		t.Fatalf("unexpected order or names: got [%q, %q]", got[0].GetName(), got[1].GetName())
+	}
+}
+
+func TestGetMappingSources_SourceNotFound(t *testing.T) {
+	host := "h"
+	pf := &ProjectFile{
+		Sources: []string{"missing"},
+		Static:  []*StaticMapping{{Name: "present", Host: &host, Ip: "127.0.0.1"}},
+	}
+
+	_, err := pf.GetMappingSources()
+	if err == nil {
+		t.Fatalf("expected error when source name is missing")
+	}
+	if !contains(err.Error(), "source 'missing' not found") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestGetMappingSources_DuplicateNamesError(t *testing.T) {
+	host1 := "a"
+	host2 := "b"
+	pf := &ProjectFile{
+		Sources: []string{"dup"},
+		Static:  []*StaticMapping{{Name: "dup", Host: &host1, Ip: "1.1.1.1"}},
+		Http:    []*HTTPMapping{{Name: "dup", Endpoint: "http://127.invalid/"}},
+	}
+
+	_, err := pf.GetMappingSources()
+	if err == nil {
+		t.Fatalf("expected error due to duplicate source names, got nil")
+	}
+	// joined error should mention duplicate source name
+	if !contains(err.Error(), "duplicate source name: dup") {
+		t.Fatalf("error does not mention duplicate: %v", err)
+	}
+	_ = host2 // keep variable used in case of future extension
+}
+
+func contains(s, sub string) bool { return strings.Contains(s, sub) }
