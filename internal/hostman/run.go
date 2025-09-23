@@ -24,18 +24,20 @@ func RunOnce(cfg Config) error {
 		return errors.New(fmt.Sprintf("Could not parse config file '%s', got error: %s", cfgFile, err))
 	}
 
-	fmt.Println(project)
+	sources, err := project.GetMapping()
+	if err != nil {
+		return errors.New(fmt.Sprintf("Could not get mapping sources, got error: %s", err))
+	}
 
-	//fmt.Println(cmd.String("hostsfile"))
-	//fmt.Println(cmd.Bool("watch"))
+	hostsFile, err := OpenHostsFile(cfg.Hostsfile)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Could not open hosts file '%s', got error: %s", cfg.Hostsfile, err))
+	}
 
-	// If watch => watch filename for changes
-	// + watch http endpoints for changes
-	//
-
-	return nil
+	return hostsFile.Update(project.Project, project.filepath, sources)
 }
 
 func RunAndWatch(cfg Config) error {
+
 	return nil
 }

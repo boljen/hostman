@@ -132,6 +132,24 @@ func (file *ProjectFile) validateAndMapSources() (map[string]Mapping, error) {
 	return sourcesMap, nil
 }
 
+func (file *ProjectFile) GetMapping() (map[string]string, error) {
+	src, err := file.GetMappingSources()
+	if err != nil {
+		return nil, err
+	}
+	res := make(map[string]string)
+	for _, s := range src {
+		mappingForSource, err := s.GetMapping()
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range mappingForSource {
+			res[k] = v
+		}
+	}
+	return res, nil
+}
+
 var validateNameRegex = regexp.MustCompile(`\S`)
 
 func validateName(name string) error {
