@@ -39,6 +39,10 @@ Step 2: Run the binary
 
 There should be a new section in your hosts file that maps example.com to 127.0.0.1.
 
+Alternatively you can use watch mode which will refresh every 5 seconds;
+
+    hostman -w
+
 ## Advanced configuration
 
 ### Multiple hosts

@@ -13,9 +13,8 @@ type RemoteHostConfig struct {
 }
 
 type HTTPMapping struct {
-	Name            string `hcl:"name,label"`
-	Endpoint        string `hcl:"endpoint"`
-	RefreshInterval int    `hcl:"refresh_interval"`
+	Name     string `hcl:"name,label"`
+	Endpoint string `hcl:"endpoint"`
 }
 
 func (s *HTTPMapping) GetMapping() (map[string]string, error) {

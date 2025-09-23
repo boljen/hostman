@@ -42,7 +42,7 @@ func main() {
 			filename := cmd.String("file")
 			hostsFile := cmd.String("hostsfile")
 
-			return hostman.Run(hostman.Config{
+			return hostman.Run(hostman.RunConfig{
 				Watchmode: watchMode,
 				Filename:  filename,
 				Hostsfile: hostsFile,

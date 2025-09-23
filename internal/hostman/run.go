@@ -3,9 +3,17 @@ package hostman
 import (
 	"errors"
 	"fmt"
+	"log"
+	"time"
 )
 
-func Run(cfg Config) error {
+type RunConfig struct {
+	Watchmode bool
+	Filename  string
+	Hostsfile string
+}
+
+func Run(cfg RunConfig) error {
 	if cfg.Watchmode {
 		return RunAndWatch(cfg)
 	} else {
@@ -13,7 +21,7 @@ func Run(cfg Config) error {
 	}
 }
 
-func RunOnce(cfg Config) error {
+func RunOnce(cfg RunConfig) error {
 	cfgFile, err := ResolveConfigFilePath(cfg.Filename)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Could not resolve config file '%s'", cfg.Filename))
@@ -37,7 +45,22 @@ func RunOnce(cfg Config) error {
 	return hostsFile.Update(project.Project, project.filepath, sources)
 }
 
-func RunAndWatch(cfg Config) error {
+func RunAndWatch(cfg RunConfig) error {
 
-	return nil
+	fmt.Println("Starting")
+	if err := RunOnce(cfg); err != nil {
+		return err
+	}
+
+	ticker := time.Tick(5 * time.Second)
+
+	for {
+		select {
+		case <-ticker:
+			if err := RunOnce(cfg); err != nil {
+				log.Printf("Error while refreshing: %s", err)
+			}
+		}
+	}
+
 }
