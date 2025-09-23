@@ -51,7 +51,7 @@ You can rewrite the static block as follows to allow multiple hosts:
 
     static "main" {
         hosts = [
-            "example.com"
+            "example.com",
             "example.org"
         ]
         ip = "127.0.0.1"

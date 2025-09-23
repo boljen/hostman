@@ -27,7 +27,7 @@ func (f *HostsFile) Update(project string, filename string, mapping map[string]s
 	projectStart := "### hostman-project-start " + project + " ###"
 	projectEnd := "### hostman-project-end " + project + " ###"
 
-	projectContent := filename + "\n"
+	projectContent := "### location: " + filename + "\n"
 	for domain, ip := range mapping {
 		projectContent = projectContent + ip + "\t" + domain + "\n"
 	}

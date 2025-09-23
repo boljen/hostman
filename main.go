@@ -62,6 +62,18 @@ func main() {
 				},
 			},
 			{
+				Name:  "cat",
+				Usage: "Outputs the content of the hosts file",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					data, err := os.ReadFile(cmd.String("hostsfile"))
+					if err != nil {
+						return errors.New(fmt.Sprintf("Could not read hosts file '%s' because error '%s'", cmd.String("hostsfile"), err))
+					}
+					os.Stdout.Write(data)
+					return nil
+				},
+			},
+			{
 				Name:  "projects",
 				Usage: "Lists current projects in the hosts file together with their host mapping and original file",
 				Flags: []cli.Flag{
@@ -75,6 +87,9 @@ func main() {
 					if err != nil {
 						return errors.New(fmt.Sprintf("Could not read hosts file '%s' because error '%s'", cmd.String("hostsfile"), err))
 					}
+
+					// Parse into project sections!
+
 					os.Stdout.Write(data)
 					return nil
 				},
