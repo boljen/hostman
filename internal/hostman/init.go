@@ -8,9 +8,9 @@ import (
 const ProjectFileTemplate = `project = "demo"
 
 sources = [
-	"single"
+	"single",
+#	"remote",
 	"multiple"
-	"remote"
 ]
 
 static "single" {

@@ -35,13 +35,13 @@ Step 1: Create a configuration file "hostman.hcl" in the current directory or an
 
 Step 2: Run the binary
 
-    hostman
+    hostman apply
 
 There should be a new section in your hosts file that maps example.com to 127.0.0.1.
 
 Alternatively you can use watch mode which will refresh every 5 seconds;
 
-    hostman -w
+    hostman apply -w
 
 ## Advanced configuration
 

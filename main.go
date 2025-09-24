@@ -14,42 +14,45 @@ import (
 func main() {
 
 	if err := (&cli.Command{
-		Name:  "hostman",
-		Usage: "Apply a project file with domain mapping to the operating systems hosts file",
-
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "file",
-				Usage:   "Name of the hostman project file. If only a filename is given it will look for the file in the current directory or any of the parent directories.",
-				Aliases: []string{"f"},
-				Value:   "hostman.hcl",
-			},
-			&cli.StringFlag{
-				Name:    "hostsfile",
-				Usage:   "location of the os hosts file",
-				Aliases: []string{"h"},
-				Value:   HOST_FILE_NATIVE_PATH,
-			},
-			&cli.BoolFlag{
-				Name:    "watch",
-				Usage:   "Enable watch mode",
-				Aliases: []string{"w"},
-			},
-		},
-
-		Action: func(ctx context.Context, cmd *cli.Command) error {
-			watchMode := cmd.Bool("watch")
-			filename := cmd.String("file")
-			hostsFile := cmd.String("hostsfile")
-
-			return hostman.Run(hostman.RunConfig{
-				Watchmode: watchMode,
-				Filename:  filename,
-				Hostsfile: hostsFile,
-			})
-		},
+		Name: "hostman",
 
 		Commands: []*cli.Command{
+			{
+				Name:  "apply",
+				Usage: "Apply a project file with domain mapping to the operating systems hosts file",
+
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "file",
+						Usage:   "Name of the hostman project file. If only a filename is given it will look for the file in the current directory or any of the parent directories.",
+						Aliases: []string{"f"},
+						Value:   "hostman.hcl",
+					},
+					&cli.StringFlag{
+						Name:    "hostsfile",
+						Usage:   "location of the os hosts file",
+						Aliases: []string{"h"},
+						Value:   HOST_FILE_NATIVE_PATH,
+					},
+					&cli.BoolFlag{
+						Name:    "watch",
+						Usage:   "Enable watch mode",
+						Aliases: []string{"w"},
+					},
+				},
+
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					watchMode := cmd.Bool("watch")
+					filename := cmd.String("file")
+					hostsFile := cmd.String("hostsfile")
+
+					return hostman.Run(hostman.RunArgs{
+						Watchmode: watchMode,
+						Filename:  filename,
+						Hostsfile: hostsFile,
+					})
+				},
+			},
 			{
 				Name:  "init",
 				Usage: "Initializes a new hostman project file (hostman.hcl) in the current directory",
@@ -74,7 +77,7 @@ func main() {
 				},
 			},
 			{
-				Name:  "projects",
+				Name:  "list",
 				Usage: "Lists current projects in the hosts file together with their host mapping and original file",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
@@ -83,15 +86,10 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					data, err := os.ReadFile(cmd.String("hostsfile"))
-					if err != nil {
-						return errors.New(fmt.Sprintf("Could not read hosts file '%s' because error '%s'", cmd.String("hostsfile"), err))
-					}
-
-					// Parse into project sections!
-
-					os.Stdout.Write(data)
-					return nil
+					return hostman.List(hostman.ListArgs{
+						Hostsfile: cmd.String("hostsfile"),
+						Project:   cmd.String("project"),
+					})
 				},
 			},
 			{

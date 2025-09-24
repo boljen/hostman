@@ -4,16 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"time"
 )
 
-type RunConfig struct {
+type RunArgs struct {
 	Watchmode bool
 	Filename  string
 	Hostsfile string
 }
 
-func Run(cfg RunConfig) error {
+func Run(cfg RunArgs) error {
 	if cfg.Watchmode {
 		return RunAndWatch(cfg)
 	} else {
@@ -21,7 +22,7 @@ func Run(cfg RunConfig) error {
 	}
 }
 
-func RunOnce(cfg RunConfig) error {
+func RunOnce(cfg RunArgs) error {
 	cfgFile, err := ResolveConfigFilePath(cfg.Filename)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Could not resolve config file '%s'", cfg.Filename))
@@ -45,7 +46,7 @@ func RunOnce(cfg RunConfig) error {
 	return hostsFile.Update(project.Project, project.filepath, sources)
 }
 
-func RunAndWatch(cfg RunConfig) error {
+func RunAndWatch(cfg RunArgs) error {
 
 	fmt.Println("Starting")
 	if err := RunOnce(cfg); err != nil {
@@ -63,4 +64,20 @@ func RunAndWatch(cfg RunConfig) error {
 		}
 	}
 
+}
+
+type ListArgs struct {
+	Hostsfile string
+	Project   string
+}
+
+func List(args ListArgs) error {
+	data, err := os.ReadFile(args.Hostsfile)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Hosts file content:\n%s", string(data))
+
+	return nil
 }
