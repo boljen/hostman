@@ -14,7 +14,7 @@ A utility to manage hosts files for project-specific development/testing environ
 
 Head over to the releases page or install from source;
 
-    go install github.com/boljen/hostman
+    go install github.com/boljen/hostman@latest
 
 ## Usage
 
