@@ -33,9 +33,9 @@ Step 1: Create a configuration file "hostman.hcl" in the current directory or an
         ip = "127.0.0.1"
     }
 
-Step 2: Run the binary
+Step 2: Run the binary as administrator (you can enable "sudo" in Windows in the developer settings):
 
-    hostman apply
+    sudo hostman apply
 
 There should be a new section in your hosts file that maps example.com to 127.0.0.1.
 

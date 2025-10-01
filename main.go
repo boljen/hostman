@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/boljen/hostman/internal/hostman"
 	"log"
 	"os"
+
+	"github.com/boljen/hostman/internal/hostman"
 
 	"github.com/urfave/cli/v3"
 )
@@ -16,24 +17,27 @@ func main() {
 	if err := (&cli.Command{
 		Name: "hostman",
 
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "file",
+				Usage:   "Name of the hostman project file. If only a filename is given it will look for the file in the current directory or any of the parent directories.",
+				Aliases: []string{"f"},
+				Value:   "hostman.hcl",
+			},
+			&cli.StringFlag{
+				Name:    "hostsfile",
+				Usage:   "location of the os hosts file",
+				Aliases: []string{"h"},
+				Value:   HOST_FILE_NATIVE_PATH,
+			},
+		},
+
 		Commands: []*cli.Command{
 			{
 				Name:  "apply",
 				Usage: "Apply a project file with domain mapping to the operating systems hosts file",
 
 				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:    "file",
-						Usage:   "Name of the hostman project file. If only a filename is given it will look for the file in the current directory or any of the parent directories.",
-						Aliases: []string{"f"},
-						Value:   "hostman.hcl",
-					},
-					&cli.StringFlag{
-						Name:    "hostsfile",
-						Usage:   "location of the os hosts file",
-						Aliases: []string{"h"},
-						Value:   HOST_FILE_NATIVE_PATH,
-					},
 					&cli.BoolFlag{
 						Name:    "watch",
 						Usage:   "Enable watch mode",
@@ -53,6 +57,7 @@ func main() {
 					})
 				},
 			},
+
 			{
 				Name:  "init",
 				Usage: "Initializes a new hostman project file (hostman.hcl) in the current directory",
@@ -64,6 +69,7 @@ func main() {
 					return hostman.InitProjectFile(cwd)
 				},
 			},
+
 			{
 				Name:  "cat",
 				Usage: "Outputs the content of the hosts file",
@@ -76,6 +82,7 @@ func main() {
 					return nil
 				},
 			},
+
 			{
 				Name:  "list",
 				Usage: "Lists current projects in the hosts file together with their host mapping and original file",
@@ -92,6 +99,7 @@ func main() {
 					})
 				},
 			},
+
 			{
 				Name:  "clean",
 				Usage: "removes hostman managed blocks in the hosts file. If no project is specified, all managed blocks are removed",
