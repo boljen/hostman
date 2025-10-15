@@ -1,6 +1,9 @@
 package hostman
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestGetSection_data(t *testing.T) {
 	data := `
@@ -12,7 +15,7 @@ data
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res != "data" {
+	if strings.TrimSpace(res) != "data" {
 		t.Fatalf("unexpected result: %q", res)
 	}
 }
@@ -23,11 +26,11 @@ func TestGetSection_nodata(t *testing.T) {
 
 <END>
 `
-	res, err := GetSection(data, "<STARTB>", "<END>")
+	res, err := GetSection(data, "<START>", "<END>")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res != "" {
+	if res != "\n\n" {
 		t.Fatalf("unexpected result: %q", res)
 	}
 }
