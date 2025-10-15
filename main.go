@@ -86,16 +86,9 @@ func main() {
 			{
 				Name:  "list",
 				Usage: "Lists current projects in the hosts file together with their host mapping and original file",
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:  "project",
-						Usage: "name of the specific project to list hosts configuration",
-					},
-				},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
 					return hostman.List(hostman.ListArgs{
 						Hostsfile: cmd.String("hostsfile"),
-						Project:   cmd.String("project"),
 					})
 				},
 			},
@@ -110,7 +103,10 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return errors.New("Not yet implemented")
+					return hostman.Clean(hostman.CleanArgs{
+						Hostsfile: cmd.String("hostsfile"),
+						Project:   cmd.String("project"),
+					})
 				},
 			},
 		},

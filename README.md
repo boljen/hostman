@@ -43,6 +43,10 @@ Alternatively you can use watch mode which will refresh every 5 seconds;
 
     sudo hostman apply -w
 
+Finally you can clean up the hostsfile of all applied configurations
+
+    sudo hostman clean
+
 ## Advanced configuration
 
 ### Multiple hosts

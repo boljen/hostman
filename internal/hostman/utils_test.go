@@ -2,6 +2,36 @@ package hostman
 
 import "testing"
 
+func TestGetSection_data(t *testing.T) {
+	data := `
+<START>
+data
+<END>
+`
+	res, err := GetSection(data, "<START>", "<END>")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if res != "data" {
+		t.Fatalf("unexpected result: %q", res)
+	}
+}
+
+func TestGetSection_nodata(t *testing.T) {
+	data := `
+<START>
+
+<END>
+`
+	res, err := GetSection(data, "<STARTB>", "<END>")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if res != "" {
+		t.Fatalf("unexpected result: %q", res)
+	}
+}
+
 func TestInsertOrReplaceSection_NormalizesNewlines(t *testing.T) {
 	data := ""
 	start := "<START>"

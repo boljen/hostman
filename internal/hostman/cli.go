@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
+	"strings"
 	"time"
 )
 
@@ -43,7 +43,16 @@ func RunOnce(cfg RunArgs) error {
 		return errors.New(fmt.Sprintf("Could not open hosts file '%s', got error: %s", cfg.Hostsfile, err))
 	}
 
-	return hostsFile.Update(project.Project, project.filepath, sources)
+	if err := hostsFile.Update(project.Project, project.filepath, sources); err != nil {
+		return errors.New(fmt.Sprintf("Could not update hosts file content, got error: %s", err))
+	}
+
+	if err := hostsFile.Save(); err != nil {
+		return errors.New(fmt.Sprintf("Could not save hosts file content, got error: %s", err))
+	}
+
+	return nil
+
 }
 
 func RunAndWatch(cfg RunArgs) error {
@@ -68,16 +77,56 @@ func RunAndWatch(cfg RunArgs) error {
 
 type ListArgs struct {
 	Hostsfile string
-	Project   string
 }
 
 func List(args ListArgs) error {
-	data, err := os.ReadFile(args.Hostsfile)
+	hostsFile, err := OpenHostsFile(args.Hostsfile)
 	if err != nil {
-		return err
+		return errors.New(fmt.Sprintf("Could not open hosts file '%s', got error: %s", args.Hostsfile, err))
 	}
 
-	log.Printf("Hosts file content:\n%s", string(data))
+	projects := hostsFile.GetProjects()
+
+	for _, p := range projects {
+		fmt.Printf("Project: %s\n", p)
+
+		hostsData, err := hostsFile.GetProjectData(p)
+		if err != nil {
+			fmt.Printf("ERROR: Could not get hosts for project '%s', got error: %s\n", p, err)
+		}
+
+		hostsData = strings.TrimSpace(hostsData)
+
+		lines := strings.Lines(hostsData)
+
+		for s := range lines {
+			fmt.Printf("\t" + s + "\n")
+		}
+	}
 
 	return nil
+}
+
+type CleanArgs struct {
+	Project   string
+	Hostsfile string
+}
+
+func Clean(args CleanArgs) error {
+	hostsFile, err := OpenHostsFile(args.Hostsfile)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Could not open hosts file '%s', got error: %s", args.Hostsfile, err))
+	}
+
+	if args.Project == "" {
+		if err := hostsFile.RemoveAllProjects(); err != nil {
+			return err
+		}
+	} else {
+		if err := hostsFile.RemoveProject(args.Project); err != nil {
+			return err
+		}
+	}
+
+	return hostsFile.Save()
 }
