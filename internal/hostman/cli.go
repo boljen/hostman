@@ -100,7 +100,7 @@ func List(args ListArgs) error {
 		lines := strings.Lines(hostsData)
 
 		for s := range lines {
-			fmt.Printf("\t" + s + "\n")
+			fmt.Print("\t" + s + "\n")
 		}
 	}
 
