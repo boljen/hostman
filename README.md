@@ -41,7 +41,7 @@ There should be a new section in your hosts file that maps example.com to 127.0.
 
 Alternatively you can use watch mode which will refresh every 5 seconds;
 
-    hostman apply -w
+    sudo hostman apply -w
 
 ## Advanced configuration
 
@@ -62,7 +62,7 @@ You can rewrite the static block as follows to allow multiple hosts:
 You can specify an "http" block which will use an http endpoint to determine the hosts to map:
 
     http "main" {
-        endpoint = "http://example.com/hosts"
+        endpoint = "https://raw.githubusercontent.com/boljen/hostman/refs/heads/master/examples/http/response.json"
     }
 
 This is useful when you are working with a multi-tenant application where a tenant lives in a
